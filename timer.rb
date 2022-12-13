@@ -31,8 +31,6 @@ class Timer
   end
 
   def display_activities
-    puts "Saving!"
-
     puts "-" * 50
     puts "Started at\tEnded at\tTotal hours"
     puts "-" * 50
