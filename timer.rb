@@ -1,7 +1,10 @@
 #!/usr/bin/env ruby
 
+require_relative "mac/core_graphics"
+
 class Timer
-  THRESHOLD = 5 * 60 # 5 minutes
+  ONE_MINUTE = 60
+  FIVE_MINUTES = 5 * 60
 
   attr_accessor \
     :activities,
@@ -16,13 +19,13 @@ class Timer
     throttle do
       seconds = idle_time
 
-      if seconds <= THRESHOLD
+      if seconds <= FIVE_MINUTES
         # Work mode
         self.ended_at = Time.now - seconds
         self.started_at = ended_at if started_at.nil?
       else
         # Idle mode
-        record_activity(started_at..ended_at) if ended_at && started_at
+        record_activity
 
         self.ended_at = nil
         self.started_at = nil
@@ -30,7 +33,9 @@ class Timer
     end
   end
 
-  def display_activities
+  def stop
+    record_activity
+
     puts "-" * 50
     puts "Started at\tEnded at\tTotal hours"
     puts "-" * 50
@@ -55,12 +60,13 @@ class Timer
   end
 
   def idle_time
-    ns = `ioreg -c IOHIDSystem | grep HIDIdleTime`.split(" = ").last.to_f
-
-    ns / 1000000000
+    Mac::CoreGraphics.idle_time
   end
 
-  def record_activity(range)
+  def record_activity
+    return if !ended_at || !started_at
+
+    range = started_at..ended_at
     activities << range
 
     puts "Worked for #{range}"
@@ -70,12 +76,12 @@ class Timer
     loop do
       yield
 
-      sleep THRESHOLD
+      sleep ONE_MINUTE
     end
   end
 end
 
 timer = Timer.new
-Signal.trap("INT")  { timer.display_activities; exit }
+Signal.trap("INT") { timer.stop; exit }
 
 timer.start
