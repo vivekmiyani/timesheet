@@ -1,4 +1,4 @@
 react:
-  api_endpoint: https://api.github.com
-  repo: facebook/react
-  token: your_token
+  - api_endpoint: https://api.github.com
+    repo: facebook/react
+    token: your_token

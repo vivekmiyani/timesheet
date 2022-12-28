@@ -69,32 +69,34 @@ class Work
   end
 end
 
-projects     = YAML.load_file("#{__dir__}/projects.yml")
-project_keys = ARGV.fetch(0).split(",")
-date         = ARGV.fetch(1)
-projects     = project_keys.include?("all") ? projects : projects.slice(*project_keys)
+groups     = YAML.load_file("#{__dir__}/projects.yml")
+group_keys = ARGV.fetch(0).split(",")
+date       = ARGV.fetch(1)
+groups     = group_keys.include?("all") ? groups : groups.slice(*group_keys)
 
-projects.each do |project, configs|
-  Octokit.configure do |c|
-    c.api_endpoint = configs.fetch("api_endpoint")
-  end
+groups.each do |name, projects|
+  projects.each do |project|
+    Octokit.configure do |c|
+      c.api_endpoint = project.fetch("api_endpoint")
+    end
 
-  work = Work.new(date: date, repo: configs.fetch("repo"), token: configs.fetch("token"))
+    work = Work.new(date: date, repo: project.fetch("repo"), token: project.fetch("token"))
 
-  puts  "-" * 50, "#{project}:", "-" * 50
-  puts "*Reviewed:*"
+    puts  "-" * 50, "#{name}:", "-" * 50
+    puts "*Reviewed:*"
 
-  work.reviewed.each do |pull|
+    work.reviewed.each do |pull|
+      puts "[#{pull.title}](#{pull.html_url})"
+    end
+
+    puts "\n*Worked on:*"
+
+    work.worked_on.each do |pull, commits|
     puts "[#{pull.title}](#{pull.html_url})"
-  end
 
-  puts "\n*Worked on:*"
-
-  work.worked_on.each do |pull, commits|
-  puts "[#{pull.title}](#{pull.html_url})"
-
-    commits.each do |commit|
-      puts commit.commit.message
+      commits.each do |commit|
+        puts commit.commit.message
+      end
     end
   end
 end
