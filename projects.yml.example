@@ -1,0 +1,4 @@
+friendly_name:
+  - api_endpoint: https://api.github.com
+    repo: facebook/react
+    token: your_token
