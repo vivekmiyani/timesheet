@@ -69,12 +69,11 @@ class Work
   end
 end
 
-groups     = YAML.load_file("#{__dir__}/projects.yml")
-group_keys = ARGV.fetch(0).split(",")
-date       = ARGV.fetch(1)
-groups     = group_keys.include?("all") ? groups : groups.slice(*group_keys)
+date      = ARGV.fetch(0)
+group_key = ARGV.fetch(1)
+groups    = YAML.load_file("#{__dir__}/projects.yml").slice(group_key)
 
-groups.each do |name, projects|
+groups.each do |_, projects|
   projects.each do |project|
     Octokit.configure do |c|
       c.api_endpoint = project.fetch("api_endpoint")
@@ -82,17 +81,17 @@ groups.each do |name, projects|
 
     work = Work.new(date: date, repo: project.fetch("repo"), token: project.fetch("token"))
 
-    puts  "-" * 50, "#{name}:", "-" * 50
+    puts  "-" * 50, "#{project.fetch("repo")}:", "-" * 50
     puts "*Reviewed:*"
 
     work.reviewed.each do |pull|
-      puts "[#{pull.title}](#{pull.html_url})"
+      puts "#{pull.title} [(##{pull.number})](#{pull.html_url})"
     end
 
     puts "\n*Worked on:*"
 
     work.worked_on.each do |pull, commits|
-    puts "[#{pull.title}](#{pull.html_url})"
+      puts "#{pull.title} [(##{pull.number})](#{pull.html_url})"
 
       commits.each do |commit|
         puts commit.commit.message
