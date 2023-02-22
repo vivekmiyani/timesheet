@@ -1,6 +1,6 @@
 # :zap: Timesheet
 
-- Automatically generate your timesheet using Github API :octocat:
+> Automatically generate your timesheet using Github API :octocat:
 
 ## :gear: Setup
 
