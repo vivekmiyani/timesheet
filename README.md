@@ -40,3 +40,8 @@ Or even for any date:
 ```sh
 ~/timesheet/work.rb 2023-01-01 <friendly_name>
 ```
+
+## :dart: Todo
+
+- [ ] Handle response pagination
+- [ ] Handle branch without pull request
