@@ -5,16 +5,16 @@ require "octokit"
 
 class Work
   attr_reader \
-    :date,
+    :date_range,
     :repo,
     :token
 
   MERGE_COMMIT = ["Merge", "branch", "into"]
 
-  def initialize(date:, repo:, token:)
-    @date  = date
-    @repo  = repo
-    @token = token
+  def initialize(date_range:, repo:, token:)
+    @date_range  = parse_date_range(date_range)
+    @repo        = repo
+    @token       = token
   end
 
   def reviewed
@@ -46,10 +46,12 @@ class Work
     user.login
   end
 
-  def date_range
-    zone = DateTime.now.zone
-    from = "#{date}T00:00:00#{zone}"
-    to   = "#{date}T23:59:59#{zone}"
+  def parse_date_range(date_range)
+    zone       = DateTime.now.zone
+    date_range = date_range.split("..")
+
+    from = "#{date_range.first}T00:00:00#{zone}"
+    to   = "#{date_range.last}T23:59:59#{zone}"
 
     DateTime.parse(from)..DateTime.parse(to)
   end
@@ -69,9 +71,9 @@ class Work
   end
 end
 
-date      = ARGV.fetch(0)
-group_key = ARGV.fetch(1)
-groups    = YAML.load_file("#{__dir__}/projects.yml").slice(group_key)
+date_range = ARGV.fetch(0)
+group_key  = ARGV.fetch(1)
+groups     = YAML.load_file("#{__dir__}/projects.yml").slice(group_key)
 
 groups.each do |_, projects|
   projects.each do |project|
@@ -79,7 +81,7 @@ groups.each do |_, projects|
       c.api_endpoint = project.fetch("api_endpoint")
     end
 
-    work = Work.new(date: date, repo: project.fetch("repo"), token: project.fetch("token"))
+    work = Work.new(date_range: date_range, repo: project.fetch("repo"), token: project.fetch("token"))
 
     puts  "-" * 50, "#{project.fetch("repo")}:", "-" * 50
     puts "*Reviewed:*"
