@@ -17,6 +17,14 @@ class Work
     @token       = token
   end
 
+  def merged
+    pulls = client.search_issues("is:merged repo:#{repo} type:pr updated:>=#{date_range.begin}", { per_page: 100 }).items
+
+    pulls = pulls.find_all { |i| date_range.cover?(i.pull_request.merged_at.to_datetime) }
+
+    pulls.map { |i| client.pull_request(repo, i.number) }.find_all { |i| i.merged_by.login == username }
+  end
+
   def reviewed
     pulls = client.search_issues("-author:#{username} repo:#{repo} reviewed-by:#{username} type:pr updated:>=#{date_range.begin}", { per_page: 100 }).items
 
@@ -84,9 +92,16 @@ groups.each do |_, projects|
     work = Work.new(date_range: date_range, repo: project.fetch("repo"), token: project.fetch("token"))
 
     puts  "-" * 50, "#{project.fetch("repo")}:", "-" * 50
+
     puts "*Reviewed:*"
 
     work.reviewed.each do |pull|
+      puts "#{pull.title} [(##{pull.number})](#{pull.html_url})"
+    end
+
+    puts "\n*Merged:*"
+
+    work.merged.each do |pull|
       puts "#{pull.title} [(##{pull.number})](#{pull.html_url})"
     end
 
