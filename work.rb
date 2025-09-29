@@ -5,9 +5,7 @@
 require "faraday"
 
 class Work
-  attr_reader \
-    :date_range,
-    :token
+  attr_reader :date_range, :token
 
   def initialize(date_range:, token:)
     @date_range = parse_date_range(date_range)
@@ -17,15 +15,12 @@ class Work
   def print_summary
     search.each do |(repo, title), work|
       puts "-" * 50, "#{repo}:", "-" * 50
-
       puts title
 
       work[:commits].each do |i|
         puts "- #{i}"
       end
-
       puts "- Reviewed" if work[:reviewed]
-
       puts "- Merged" if work[:merged]
     end
   end
@@ -157,6 +152,4 @@ end
 date_range = ARGV.fetch(0)
 token = File.read("#{ENV['HOME']}/.timesheet-token")
 
-work = Work.new(date_range: date_range, token: token)
-
-work.print_summary
+Work.new(date_range: date_range, token: token).print_summary
