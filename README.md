@@ -6,42 +6,35 @@
 
 1. Clone project
 
-    ```sh
-    git clone https://github.com/vivekmiyani/timesheet.git ~/timesheet
-    cd ~/timesheet
-    ```
+   ```sh
+   git clone https://github.com/vivekmiyani/timesheet.git ~/timesheet
+   ```
 
 2. Install dependency
 
-    ```sh
-    gem install octokit
-    ```
+   ```sh
+   gem install faraday
+   ```
 
-3. Create projects.yml
+3. Generate Github API token
 
-    ```sh
-    cp projects.yml.example projects.yml
-    ```
+   - Open [Generate new token (classic)](https://github.com/settings/tokens/new)
+   - Set Expiration to **Never**
+   - Select scopes: `repo` and `user`
+   - Click **Generate** and copy the token
 
-4. Configure project groups in projects.yml
-
-    - Create and update github token (with access to `user` and `repo` scopes)
+4. Save the token to `~/.timesheet-token` in your home folder.
 
 ## :sparkles: Usage
 
-Generate your today's timesheet for any project group:
+Generate your today's timesheet:
 
 ```sh
-~/timesheet/work.rb $(date '+%Y-%m-%d') <friendly_name>
+~/timesheet/work.rb $(date '+%Y-%m-%d')
 ```
 
-Or even for any date:
+Or for any date:
 
 ```sh
-~/timesheet/work.rb 2023-01-01 <friendly_name>
+~/timesheet/work.rb 2023-01-01
 ```
-
-## :dart: Todo
-
-- [ ] Handle response pagination
-- [ ] Handle branch without pull request
