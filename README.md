@@ -38,3 +38,20 @@ Or for any date:
 ```sh
 ~/timesheet/work.rb 2023-01-01
 ```
+
+Which produces output:
+
+```
+--------------------------------------------------
+acme-inc/admin:
+--------------------------------------------------
+ACME-110 - Allow users to view other users orders
+- Updated users policy
+- Fixed broken tests
+
+--------------------------------------------------
+acme-inc/app:
+--------------------------------------------------
+ACME-201 - Implement bug reporting feature
+- Added global exception handler
+```
