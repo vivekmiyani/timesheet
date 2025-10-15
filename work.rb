@@ -13,15 +13,18 @@ class Work
   end
 
   def print_summary
-    search.each do |(repo, title), work|
+    search.each do |repo, work_arr|
       puts "-" * 50, "#{repo}:", "-" * 50
-      puts title
 
-      work[:commits].each do |i|
-        puts "- #{i}"
+      work_arr.each do |work|
+        puts work[:title]
+
+        work[:commits].each do |i|
+          puts "- #{i}"
+        end
+        puts "- Reviewed" if work[:reviewed]
+        puts "- Merged" if work[:merged]
       end
-      puts "- Reviewed" if work[:reviewed]
-      puts "- Merged" if work[:merged]
     end
   end
 
@@ -68,10 +71,11 @@ class Work
 
       merged = node.dig("mergedBy", "login") == viewer[:login] && date_range.cover?(DateTime.parse(node["mergedAt"]))
 
-      key = [node["repository"]["nameWithOwner"], node["title"]]
-
       if commits.length.positive? || reviewed || merged
-        object[key] = { commits: commits, reviewed: reviewed, merged: merged }
+        key = node["repository"]["nameWithOwner"]
+
+        object[key] ||= []
+        object[key] << { title: node["title"], commits: commits, reviewed: reviewed, merged: merged }
       end
     end
   end
@@ -150,6 +154,6 @@ class Work
 end
 
 date_range = ARGV.fetch(0)
-token = File.read("#{ENV['HOME']}/.timesheet-token")
+token = File.read("#{Dir.home}/.timesheet-token")
 
 Work.new(date_range: date_range, token: token).print_summary
