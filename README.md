@@ -1,8 +1,8 @@
-# :zap: Timesheet
+# Timesheet
 
-> Automatically generate your timesheet using Github API :octocat:
+> Automatically generate your timesheet using Github API
 
-## :gear: Setup
+## Setup
 
 1. Clone project
 
@@ -25,7 +25,7 @@
 
 4. Save the token to `~/.timesheet-token` in your home folder.
 
-## :sparkles: Usage
+## Usage
 
 Generate your today's timesheet:
 
