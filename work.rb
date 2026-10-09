@@ -40,6 +40,29 @@ class Work
     DateTime.parse(from)..DateTime.parse(to)
   end
 
+  def pull_requests
+    repositories = viewer[:repositories].map { |i| "repo:#{i}" }.join(" ")
+
+    variables = {
+      query: "type:pr updated:>=#{date_range.begin} #{repositories}",
+      type: "ISSUE"
+    }
+
+    nodes = []
+    has_next_page = true
+
+    while has_next_page
+      page = request(query: search_query, variables: variables)["data"]["search"]
+
+      has_next_page = page["pageInfo"]["hasNextPage"]
+      variables[:cursor] = page["pageInfo"]["endCursor"]
+
+      nodes.concat(page["nodes"])
+    end
+
+    nodes
+  end
+
   def request(query:, variables:)
     body = { query: query, variables: variables }.to_json
     headers = { Authorization: "Bearer #{token}" }
@@ -50,16 +73,7 @@ class Work
   end
 
   def search # rubocop:disable Metrics/AbcSize,Metrics/CyclomaticComplexity,Metrics/PerceivedComplexity
-    repositories = viewer[:repositories].map { |i| "repo:#{i}" }.join(" ")
-
-    variables = {
-      query: "type:pr updated:>=#{date_range.begin} #{repositories}",
-      type: "ISSUE"
-    }
-
-    response = request(query: search_query, variables: variables)["data"]["search"]["nodes"]
-
-    response.each_with_object({}) do |node, object|
+    pull_requests.each_with_object({}) do |node, object|
       commits = node["commits"]["nodes"].find_all do |commit|
         commit.dig("commit", "author", "user", "login") == viewer[:login] && date_range.cover?(DateTime.parse(commit["commit"]["committedDate"])) # rubocop:disable Layout/LineLength
       end
@@ -82,8 +96,8 @@ class Work
 
   def search_query
     <<~GQL
-      query search($query: String!, $type: SearchType!) {
-        search(last: 100, query: $query, type: $type) {
+      query search($cursor: String, $query: String!, $type: SearchType!) {
+        search(after: $cursor, first: 100, query: $query, type: $type) {
           nodes {
             ... on PullRequest {
               commits(last: 250) {
@@ -116,6 +130,10 @@ class Work
               }
               title
             }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
           }
         }
       }
