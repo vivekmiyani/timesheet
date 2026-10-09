@@ -48,13 +48,14 @@ class Work
       type: "ISSUE"
     }
 
-    page = request(query: search_query, variables: variables)["data"]["search"]
-    nodes = page["nodes"]
+    nodes = []
+    has_next_page = true
 
-    while page["pageInfo"]["hasNextPage"]
-      variables[:cursor] = page["pageInfo"]["endCursor"]
-
+    while has_next_page
       page = request(query: search_query, variables: variables)["data"]["search"]
+
+      has_next_page = page["pageInfo"]["hasNextPage"]
+      variables[:cursor] = page["pageInfo"]["endCursor"]
 
       nodes.concat(page["nodes"])
     end
